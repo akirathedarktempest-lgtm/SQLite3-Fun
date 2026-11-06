@@ -23,11 +23,21 @@ class DataBase:
         return "NOT NULL"
     def DEAULT(self,arg):
         return f"DEFAULT ({arg})"
-    def CHECK(self,first_arg,comparision:str,second_arg):
-        if type(first_arg) is str:
-            first_arg=f'"{first_arg}'
-        if type(second_arg) is str:
-            second_arg=f'"{second_arg}'
+    def CHECK(self,first_arg,comparision:str,second_arg, is_first_column_name=False,is_second_column=False):
+        if is_first_column_name is True:
+            first_arg=first_arg
+        else:
+            if type(first_arg) is str:
+                first_arg=f'"{first_arg}'
+            else:
+                first_arg=first_arg
+        if is_second_column is True:
+            second_arg=second_arg
+        else:
+            if type(second_arg) is str:
+                second_arg=f'"{second_arg}'
+            else:
+                second_arg=second_arg
         if comparision==">":
             return f"CHECK ({first_arg}>{second_arg})"
         elif comparision=="<":
@@ -38,6 +48,8 @@ class DataBase:
             return f"CHECK ({first_arg}<={second_arg})"
         elif comparision=="<>":
             return f"CHECK ({first_arg}<>{second_arg})"
+        elif comparision=="=":
+            return f"CHECK ({first_arg}={second_arg})"
         else:
             raise "Wrong comparision :("
 
@@ -51,7 +63,7 @@ class DataBase:
             connect.close()
             return f"{self.dbName}.db"
 
-    def CreateTable(self,table_name:str,*argu):
+    def CreateTable(self,table_name:str,*argu,may_exist=False):
         for w in table_name:
             if w in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_":
                 pass
@@ -59,14 +71,27 @@ class DataBase:
                 raise
         statement=""
         for a in argu:
+            dt=0
+            constrain=[]
             if type(a) is list or type(a) is tuple:
                 name=a[0]
+                for n in name:
+                    if n in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_":
+                        pass
+                    else:
+                        raise "Wrong name"
                 statement+=f"{name} "
                 for u in a:
+                    if u in constrain:
+                        continue
                     if u==name:
                         continue
                     else:
                         statement+=f"{u} "
+                    if u==self.BLOB() or u==self.INT() or u==self.REAL() or u==self.NULL() or u==self.TEXT():
+                        dt+=1
+                    else:
+                        constrain.append(u)
                 if a==argu[-1]:
                     pass
                 else:
@@ -76,5 +101,8 @@ class DataBase:
         db=self.CreateDB()
         connect=sqlite3.connect(db)
         cursor=connect.cursor()
-        cursor.execute(f"CREATE TABLE {table_name}({statement})")
+        if may_exist is True:
+            cursor.execute(f"CREATE TABLE IF NOT EXISTS {table_name}({statement})")
+        else:
+            cursor.execute(f"CREATE TABLE {table_name}({statement})")
         connect.close()
