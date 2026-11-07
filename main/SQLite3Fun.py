@@ -112,8 +112,6 @@ class DataBase:
         connect.close()
 
     class AlterTable:
-        def __init__(self):
-            pass
 
         def RENAME_TABLE(self,dbname:str,table_old_name:str,table_new_name:str):
             if dbname.endswith(".db") or dbname.endswith(".sqlite3"):
@@ -136,3 +134,45 @@ class DataBase:
             cursor.execute(f"ALTER TABLE {table_name} RENAME COLUMN {old_column_name} TO {new_column_name}")
             connect.commit()
             connect.close()
+
+        def DROP_COLUMN(self,dbname:str,table_name:str,column_name:str):
+            if dbname.endswith(".db") or dbname.endswith(".sqlite3"):
+                dbname=dbname
+            else:
+                dbname=f"{dbname}.db"
+            connect=sqlite3.connect(dbname)
+            cursor=connect.cursor()
+            cursor.execute(f"ALTER TABLE {table_name} DROP COLUMN {column_name}")
+            connect.commit()
+            connect.close()
+
+        def ADD_COLUMN(self,dbname:str,table_name:str,column_name:str,*datatype,constrains:str=None):
+            if dbname.endswith(".db") or dbname.endswith(".sqlite3"):
+                dbname=dbname
+            else:
+                dbname=f"{dbname}.db"
+            con=""
+            if "PRIMARY KEY" in constrains.upper() or "UNIQUE" in constrains.upper() or "NOT NULL" in constrains.upper():
+                raise "Invalid Constrain"
+            elif constrains:
+                con+=constrains
+            else:
+                con=""
+            dt=0
+            dty=""
+            for d in datatype:
+                if d.upper()=="REAL" or d.upper=="TEXT" or d.upper()=="INT" or d.upper()=="INTEGER" or d.upper()=="NULL" or d.upper()=="BLOB":
+                    dt+=1
+                    dty+=d.upper()
+                else:
+                    raise
+            if dt>1:
+                raise "Only one datatype"
+            connect=sqlite3.connect(dbname)
+            cursor=connect.cursor()
+            cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {dty} {con}")
+            connect.commit()
+            connect.close()
+
+AlterTable=DataBase.AlterTable()
+#we are making this AlterTable to use it properly, it is is object right now 
