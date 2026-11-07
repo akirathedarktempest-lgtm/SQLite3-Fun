@@ -88,7 +88,7 @@ class DataBase:
                         continue
                     else:
                         statement+=f"{u} "
-                    if u==self.BLOB() or u==self.INT() or u==self.REAL() or u==self.NULL() or u==self.TEXT():
+                    if u.upper()==self.BLOB() or u.upper()==self.INT() or u.upper()==self.REAL() or u.upper()==self.NULL() or u.upper()==self.TEXT():
                         dt+=1
                     else:
                         constrain.append(u)
@@ -98,6 +98,10 @@ class DataBase:
                     statement+=","
             else:
                 raise
+        if dt>1:
+            raise
+        else:
+            pass
         db=self.CreateDB()
         connect=sqlite3.connect(db)
         cursor=connect.cursor()
@@ -106,3 +110,29 @@ class DataBase:
         else:
             cursor.execute(f"CREATE TABLE {table_name}({statement})")
         connect.close()
+
+    class AlterTable:
+        def __init__(self):
+            pass
+
+        def RENAME_TABLE(self,dbname:str,table_old_name:str,table_new_name:str):
+            if dbname.endswith(".db") or dbname.endswith(".sqlite3"):
+                dbname=dbname
+            else:
+                dbname=f"{dbname}.db"
+            connect=sqlite3.connect(dbname)
+            cursor=connect.cursor()
+            cursor.execute(f"ALTER TABLE {table_old_name} RENAME TO {table_new_name}")
+            connect.commit()
+            connect.close()
+
+        def RENAME_COLUMN(self,dbname:str,table_name:str,old_column_name:str,new_column_name:str):
+            if dbname.endswith(".db") or dbname.endswith(".sqlite3"):
+                dbname=dbname
+            else:
+                dbname=f"{dbname}.db"
+            connect=sqlite3.connect(dbname)
+            cursor=connect.cursor()
+            cursor.execute(f"ALTER TABLE {table_name} RENAME COLUMN {old_column_name} TO {new_column_name}")
+            connect.commit()
+            connect.close()
