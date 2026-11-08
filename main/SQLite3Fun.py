@@ -174,5 +174,27 @@ class DataBase:
             connect.commit()
             connect.close()
 
-AlterTable=DataBase.AlterTable()
+    class Update:
+        def __init__(self):
+            pass
+
+        def UPDATE(self,dbname:str,table_name:str,column:str,set:str,where:bool=False):
+            if dbname.endswith(".db") or dbname.endswith(".sqlite3"):
+                dbname=dbname
+            else:
+                dbname=f"{dbname}.db"
+            if where==False:
+                where=""
+            elif where==True:
+                where=f"WHERE {where}"
+            else:
+                raise
+            connect=sqlite3.connect(dbname)
+            cursor=connect.cursor()
+            cursor.execute(f"UPDATE {table_name} SET {column}={set} {where}")
+            connect.commit()
+            connect.close()
+
+AlterTable=DataBase.AlterTable
+Update=DataBase.Update
 #we are making this AlterTable to use it properly, it is is object right now 
