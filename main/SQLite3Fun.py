@@ -152,8 +152,13 @@ class DataBase:
             else:
                 dbname=f"{dbname}.db"
             con=""
-            if "PRIMARY KEY" in constrains.upper() or "UNIQUE" in constrains.upper() or "NOT NULL" in constrains.upper():
+            if "PRIMARY KEY" in constrains.upper() or "UNIQUE" in constrains.upper():
                 raise "Invalid Constrain"
+            elif "NOT NULL" in constrains.upper():
+                if "DEFAULT" in constrains.upper():
+                    pass
+                else:
+                    raise
             elif constrains:
                 con+=constrains
             else:
@@ -178,17 +183,22 @@ class DataBase:
         def __init__(self):
             pass
 
-        def UPDATE(self,dbname:str,table_name:str,column:str,set:str,where:bool=False):
+        def __str(self,content:str):
+            return content.replace(":str:","'")#whatthis function does? for example, if u want to insert  ' in the script, people can may forget by thinking it is already a str, so instead ye :str: for that, like a script is SELECT * FROM table1 WHERE name='hello' and this ' around hello will do for that, kind of hard
+
+        def UPDATE(self,dbname:str,table_name:str,column:str,set:str,where:str=None):
             if dbname.endswith(".db") or dbname.endswith(".sqlite3"):
                 dbname=dbname
             else:
                 dbname=f"{dbname}.db"
-            if where==False:
+            if where is None:
                 where=""
-            elif where==True:
+            elif type(where) is str:
+                where=self.__str(where)#i was keeping self.__str(set) not self.__set(where)...lol, but problem solved
                 where=f"WHERE {where}"
             else:
                 raise
+            set=self.__str(set)
             connect=sqlite3.connect(dbname)
             cursor=connect.cursor()
             cursor.execute(f"UPDATE {table_name} SET {column}={set} {where}")
@@ -197,4 +207,3 @@ class DataBase:
 
 AlterTable=DataBase.AlterTable
 Update=DataBase.Update
-#we are making this AlterTable to use it properly, it is is object right now 
