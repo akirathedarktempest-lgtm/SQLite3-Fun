@@ -184,7 +184,7 @@ class DataBase:
             pass
 
         def __str(self,content:str):
-            return content.replace(":str:","'")#whatthis function does? for example, if u want to insert  ' in the script, people can may forget by thinking it is already a str, so instead ye :str: for that, like a script is SELECT * FROM table1 WHERE name='hello' and this ' around hello will do for that, kind of hard
+            return content.replace(":str:","'")
 
         def UPDATE(self,dbname:str,table_name:str,column:str,set:str,where:str=None):
             if dbname.endswith(".db") or dbname.endswith(".sqlite3"):
@@ -194,7 +194,7 @@ class DataBase:
             if where is None:
                 where=""
             elif type(where) is str:
-                where=self.__str(where)#i was keeping self.__str(set) not self.__set(where)...lol, but problem solved
+                where=self.__str(where)#i was keeping __str(set) not __set(where)...lol, but problem solved
                 where=f"WHERE {where}"
             else:
                 raise
@@ -205,5 +205,65 @@ class DataBase:
             connect.commit()
             connect.close()
 
+    class Insert:
+        def __init__(self):
+            pass
+
+        def INSERT(self,dbname:str,table_name:str,insert:tuple|list,all_columns:bool=True,specific_column:tuple|list=None):
+            if dbname.endswith(".db") or dbname.endswith(".sqlite3"):
+                dbname=dbname
+            else:
+                dbname=f"{dbname}.db"
+            if specific_column is None:
+                if all_columns is False:
+                    raise
+                else:
+                    question=f""
+                    for ins in insert:
+                        if ins==insert[-1]:
+                            question+=f"?"
+                        else:
+                            question+=f"?,"
+                    statement=f"INSERT INTO {table_name} VALUES ({question})"
+            elif specific_column is not None:
+                if len(insert)==len(specific_column):
+                    if type(specific_column) is list or type(specific_column) is tuple:
+                        pass
+                    else:
+                        raise
+                    if all_columns is True:
+                        raise
+                    else:
+                        specific=""
+                        for sc in specific_column:
+                            if type(sc) is str:
+                                pass
+                            else:
+                                raise
+                            if sc==specific_column[-1]:
+                                specific+=f"{sc}"
+                            else:
+                                specific+=f"{sc},"
+                        question=""
+                        for ins in insert:
+                            if ins==insert[-1]:
+                                question+="?"
+                            else:
+                                question+="?,"
+                        statement=f"INSERT INTO {table_name}({specific}) VALUES ({question})"
+                else:
+                    raise
+            else:
+                raise "Unknown error"
+            connect=sqlite3.connect(dbname)
+            cursor=connect.cursor()
+            cursor.execute(f"{statement}",insert)#should we use this at update as well? the use of '?'
+            connect.commit()
+            connect.close()
+
 AlterTable=DataBase.AlterTable
 Update=DataBase.Update
+Insert=DataBase.Insert
+
+if "__main__"==__name__:
+    pass
