@@ -184,7 +184,7 @@ class DataBase:
             pass
 
         def __str(self,content:str):
-            return content.replace(":str:","'")
+            return content.replace("/s/","'")
 
         def UPDATE(self,dbname:str,table_name:str,column:str,set:str,where:str=None):
             if dbname.endswith(".db") or dbname.endswith(".sqlite3"):
@@ -257,9 +257,37 @@ class DataBase:
                 raise "Unknown error"
             connect=sqlite3.connect(dbname)
             cursor=connect.cursor()
-            cursor.execute(f"{statement}",insert)#should we use this at update as well? the use of '?'
+            cursor.execute(f"{statement}",insert)
             connect.commit()
             connect.close()
+
+    class Delete:
+        def __init__(self):
+            pass
+
+        def __str(self,content:str):
+            return content.replace("/s/","'")
+
+        def DELETE(self,dbname:str,table_name:str,where=None):
+            if dbname.endswith(".db") or dbname.endswith(".sqlite3"):
+                dbname=dbname
+            else:
+                dbname=f"{dbname}.db"
+            if where is None:
+                statement=f"DELETE FROM {table_name}"
+            else:
+                if type(where) is str:
+                    pass
+                else:
+                    raise
+                where=self.__str(where)
+                statement=f"DELETE FROM {table_name} WHERE {where}"
+            connect=sqlite3.connect(dbname)
+            cursor=connect.cursor()
+            cursor.execute(statement)
+            connect.commit()
+            connect.close()
+
 
 AlterTable=DataBase.AlterTable
 Update=DataBase.Update
