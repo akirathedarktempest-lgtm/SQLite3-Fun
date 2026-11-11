@@ -288,10 +288,69 @@ class DataBase:
             connect.commit()
             connect.close()
 
+    class Select:
+        def __init__(self):
+            pass
+
+        class Aggregate:
+
+            def __init__(self):
+                pass
+
+            def COUNT(self,column:str="*",):
+                if column.upper()=="*":
+                    return "COUNT(*)"
+                else:
+                    return f"COUNT({column})"
+
+            def AVG(self,column:str):
+                if type(column) is str:
+                    return f"AVG({column})"
+                else:
+                    raise
+
+            def MAX(self,column:str):
+                if type(column) is str:
+                    return "MAX({column})"
+                else:
+                    raise
+
+            def MIN(self,column:str):
+                if type(column) is str:
+                    return f"MIN({column})"
+                else:
+                    raise
+
+            def TOTAL(self,column:str):
+                if type(column) is str:
+                    return f"TOTAL({column})"
+                else:
+                    raise
+
+            def SUM(self,column:str):
+                if type(column) is str:
+                    return f"SUM({column})"
+                else:
+                    raise
+
+            def GROUP_CONCAT(self,column:str,separator:str=","):
+                if type(column) is str:
+                    if separator==",":
+                        return "GROUP_CONCAT({column})"
+                    else:
+                        if type(separator) is str:
+                            return "GROUP_CONCAT({column},{separator})"
+                        else:
+                            raise
+                else:
+                    raise
+        
 
 AlterTable=DataBase.AlterTable
 Update=DataBase.Update
 Insert=DataBase.Insert
+Select=DataBase.Select
+Aggregate=DataBase.Select.Aggregate
 
 if "__main__"==__name__:
     pass
