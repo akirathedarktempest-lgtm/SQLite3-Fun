@@ -297,60 +297,103 @@ class DataBase:
             def __init__(self):
                 pass
 
-            def COUNT(self,column:str="*",):
+            def COUNT(self,column:str="*",distinct:bool=False):
                 if column.upper()=="*":
                     return "COUNT(*)"
                 else:
-                    return f"COUNT({column})"
+                    if distinct is True:
+                        return f"COUNT(DISTINCT {column})"
+                    else:
+                        return f"COUNT({column})"
 
-            def AVG(self,column:str):
+            def AVG(self,column:str,distinct:bool=False):
                 if type(column) is str:
-                    return f"AVG({column})"
+                    if distinct is True:
+                        return f'AVG(DISTINCT {column})'
+                    else:
+                        return f"AVG({column})"
                 else:
                     raise
 
-            def MAX(self,column:str):
+            def MAX(self,column:str,distinct:bool=False):
                 if type(column) is str:
-                    return "MAX({column})"
+                    if distinct is True:
+                        return f"MAX(DISTINCT {column})"
+                    else:
+                        return f"MAX({column})"
                 else:
                     raise
 
-            def MIN(self,column:str):
+            def MIN(self,column:str,distinct:bool=False):
                 if type(column) is str:
-                    return f"MIN({column})"
+                    if distinct is True:
+                        return f"MIN(DISTINCT {column})"
+                    else: 
+                        return f"MIN({column})"
                 else:
                     raise
 
-            def TOTAL(self,column:str):
+            def TOTAL(self,column:str,distinct:bool=False):
                 if type(column) is str:
-                    return f"TOTAL({column})"
+                    if distinct is True:
+                        return f"TOTAL(DISTINCT {column})"
+                    else:
+                        return f"TOTAL({column})"
                 else:
                     raise
 
-            def SUM(self,column:str):
+            def SUM(self,column:str,distinct:bool=False):
                 if type(column) is str:
-                    return f"SUM({column})"
+                    if distinct is True:
+                        return f"SUM(DISTINCT {column})"
+                    else:
+                        return f"SUM({column})"
                 else:
                     raise
 
-            def GROUP_CONCAT(self,column:str,separator:str=","):
+            def GROUP_CONCAT(self,column:str,separator:str=",",distinct:bool=True):
                 if type(column) is str:
+                    d=""
+                    if distinct is True:
+                        d+="DISTINCT "
+                    else:
+                        d=""
                     if separator==",":
-                        return "GROUP_CONCAT({column})"
+                        return f"GROUP_CONCAT({d}{column})"
                     else:
                         if type(separator) is str:
-                            return "GROUP_CONCAT({column},{separator})"
+                            if d=="":
+                                return f"GROUP_CONCAT({d}{column},{separator})"
+                            else:
+                                raise "You can't use separator with distinct"
                         else:
                             raise
                 else:
                     raise
-        
+    class Where:
+        def __init__(self):
+            pass
+
+        def WHERE(self,column_name:str,value,comparision:str='='):
+            if type(value) is str:
+                value=f'"{value}"'
+            elif type(value) is bytes:
+                value=f'X"{value.encode()}"'
+            elif type(value) is list or type(value) is dict or type(value) is set:
+                raise "Invalid type!"
+            else:
+                pass
+            if comparision ==">=" or comparision =="<=" or comparision =="=" or comparision =="<>" or comparision==">" or comparision =="<":
+                return f"{column_name} {comparision} {value}"
+            else:
+                raise "Invalid comparision"
 
 AlterTable=DataBase.AlterTable
 Update=DataBase.Update
 Insert=DataBase.Insert
 Select=DataBase.Select
 Aggregate=DataBase.Select.Aggregate
+Where=DataBase.Where
 
 if "__main__"==__name__:
     pass
