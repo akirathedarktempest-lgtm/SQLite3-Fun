@@ -378,7 +378,8 @@ class DataBase:
             if type(value) is str:
                 value=f'"{value}"'
             elif type(value) is bytes:
-                value=f'X"{value.encode()}"'
+                h=value.hex()
+                value=f"X'{h}'"
             elif type(value) is list or type(value) is dict or type(value) is set:
                 raise "Invalid type!"
             else:
@@ -387,6 +388,48 @@ class DataBase:
                 return f"{column_name} {comparision} {value}"
             else:
                 raise "Invalid comparision"
+
+        def AND(self):
+            return " AND "
+        def OR(self):
+            return " OR "
+        def NOT(self):
+            return " NOT "
+
+        def IN(self,values:tuple|list):
+            statement=""
+            for v in values:
+                if type(v) is str:
+                    statement+=f"'{v}'"
+                elif type(v) is bytes:
+                    b=v.hex()
+                    statement+=f"X'{b}'"
+                elif type(v) is list or type(v) is dict or type(v) is set:
+                    raise "Invalid type!"
+                else:
+                    statement+=f"{v}"
+                if v==values[-1]:
+                    pass
+                else:
+                    statement+=","
+            return f"IN ({statement})"
+
+        def LIKE(self,islike,escape:str=None):
+            like=""
+            if type(islike) is list or type(islike) is dict or type(islike) is set:
+                raise "Invalid type!"
+            elif type(islike) is str:
+                like+=f"'{islike}'"
+            elif type(islike) is bytes:
+                h=islike.hex()
+                like+=f"X'{h}'"
+            else:
+                like+=f"{islike}"
+            if escape is None:
+                statement="LIKE {like}"
+            else:
+                statement="LIKE {like} ESCAPE '{escape}'"
+            return statement
 
 AlterTable=DataBase.AlterTable
 Update=DataBase.Update
