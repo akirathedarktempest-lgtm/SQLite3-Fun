@@ -302,6 +302,35 @@ class DataBase:
                 else:
                     raise "Invalid by!"
 
+        class GroupBy:
+            def __init__(self):
+                pass
+
+            def GROUP_BY(self,column:str,having:bool=False,aggregate_comparision=None):
+                if aggregate_comparision is not None and having is False:
+                    raise "Having false and using aggregate is invalid"
+                else:
+                    if having is False and aggregate_comparision is None:
+                        h=""
+                    else:
+                        h=f" HAVING {aggregate_comparision}"
+                    return f"GROUP BY {column}{h}"
+
+            def HAVING(self,aggregate:str,value,comparision:str="="):
+                if comparision=="=" or comparision=="<>" or comparision==">" or comparision=="<" or comparision=="<=" or comparision==">=":
+                    if type(value) is list or type(value) is list or type(value) is list:
+                        raise "Invalid type!"
+                    elif type(value) is bytes:
+                        v=value.hex()
+                        value=f"X'{v}'"
+                    elif type(value) is str:
+                        value=f"'{value}'"
+                    else:
+                        value=value
+                    return f"{aggregate} {comparision} {value}"
+                else:
+                    raise "Invalid comparision sign!"
+
         class Aggregate:
 
             def __init__(self):
@@ -444,11 +473,11 @@ class DataBase:
                     else:
                         d=""
                     if separator==",":
-                        return f"GROUP_CONCAT({d}{column}){f}{order}"
+                        return f"GROUP_CONCAT({d}{column}{order}){f}"
                     else:
                         if type(separator) is str:
                             if d=="":
-                                return f"GROUP_CONCAT({d}{column},{separator}){f}{order}"
+                                return f"GROUP_CONCAT({d}{column},{separator}{order}){f}"
                             else:
                                 raise "You can't use separator with distinct"
                         else:
@@ -516,12 +545,29 @@ class DataBase:
                 statement=f"{column} LIKE {like} ESCAPE '{escape}'"
             return statement
 
+        def IS_NULL(self,column:str):
+            return f"{column} IS NULL"
+        def IS_NOT_NULL(self,column:str):
+            return f"{column} IS NOT NULL"
+
+    class Column:
+        def COLUMN(self,*columns:str):
+            col=""
+            for c in columns:
+                col+=c
+                if c==columns[-1]:
+                    pass
+                else:
+                    col+=","
+            return col
+
 AlterTable=DataBase.AlterTable
 Update=DataBase.Update
 Insert=DataBase.Insert
 Select=DataBase.Select
 Aggregate=DataBase.Select.Aggregate
 Where=DataBase.Where
+Column=DataBase.Column
 
 if "__main__"==__name__:
     pass
