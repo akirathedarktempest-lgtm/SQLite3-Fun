@@ -4,6 +4,14 @@ class DataBase:
     def __init__(self,dbName:str):
         self.dbName=dbName
 
+    def DROP_TABLE(self,table_name:str):
+        db=self.CreateDB()
+        connect=sqlite3.connect(db)
+        cursor=connect.cursor()
+        cursor.execute(f"DROP TABLE {table_name}")
+        connect.commit()
+        connect.close()
+
     def INT(self):
         return "INTEGER"
     def TEXT(self):
@@ -489,7 +497,7 @@ class DataBase:
             def __init__(self):
                 pass
 
-            def FETCHALL(self,dbname:str,table_name:str,columns:Column="*",where:Where=None,group_by:Select.GroupBy=None):
+            def FETCHALL(self,dbname:str,table_name:str,columns:Column="*",where:Where=None,group_by:Select.GroupBy=None,order_by=None):
                 if where is None:
                     w=""
                 else:
@@ -500,18 +508,22 @@ class DataBase:
                     gb=""
                 else:
                     gb=f" {group_by}"
+                if order_by is None:
+                    ob=""
+                else:
+                    ob=f" {order_by}"
                 if dbname.endswith(".sqlite3") or dbname.endswith(".db"):
                     pass
                 else:
                     dbname=f'{dbname}.db'
                 connect=sqlite3.connect(dbname)
                 cursor=connect.cursor()
-                cursor.execute(f"SELECT {columns} FROM {table_name}{w}{gb}")
+                cursor.execute(f"SELECT {columns} FROM {table_name}{w}{gb}{ob}")
                 data=cursor.fetchall()
                 connect.close()
                 return data
 
-            def FETCHONE(self,dbname:str,table_name:str,columns:Column="*",where:Where=None,group_by:Select.GroupBy=None):
+            def FETCHONE(self,dbname:str,table_name:str,columns:Column="*",where:Where=None,group_by:Select.GroupBy=None,order_by=None):
                 if where is None:
                     w=""
                 else:
@@ -522,18 +534,22 @@ class DataBase:
                     gb=""
                 else:
                     gb=f" {group_by}"
+                if order_by is None:
+                    ob=""
+                else:
+                    ob=f" {order_by}"
                 if dbname.endswith(".sqlite3") or dbname.endswith(".db"):
                     pass
                 else:
                     dbname=f'{dbname}.db'
                 connect=sqlite3.connect(dbname)
                 cursor=connect.cursor()
-                cursor.execute(f"SELECT {columns} FROM {table_name}{w}{gb}")
+                cursor.execute(f"SELECT {columns} FROM {table_name}{w}{gb}{ob}")
                 data=cursor.fetchone()
                 connect.close()
                 return data
 
-            def FETCHMANY(self,dbname:str,table_name:str,columns:Column="*",size:int=1,where:Where=None,group_by:Select.GroupBy=None):
+            def FETCHMANY(self,dbname:str,table_name:str,columns:Column="*",size:int=1,where:Where=None,group_by:Select.GroupBy=None,order_by=None):
                 if where is None:
                     w=""
                 else:
@@ -544,13 +560,17 @@ class DataBase:
                     gb=""
                 else:
                     gb=f" {group_by}"
+                if order_by is None:
+                    ob=""
+                else:
+                    ob=f" {order_by}"
                 if dbname.endswith(".sqlite3") or dbname.endswith(".db"):
                     pass
                 else:
                     dbname=f'{dbname}.db'
                 connect=sqlite3.connect(dbname)
                 cursor=connect.cursor()
-                cursor.execute(f"SELECT {columns} FROM {table_name}{w}{gb}")
+                cursor.execute(f"SELECT {columns} FROM {table_name}{w}{gb}{ob}")
                 data=cursor.fetchmany(size)
                 connect.close()
                 return data
