@@ -484,6 +484,77 @@ class DataBase:
                             raise
                 else:
                     raise
+
+        class Fetch:
+            def __init__(self):
+                pass
+
+            def FETCHALL(self,dbname:str,table_name:str,columns:Column="*",where:Where=None,group_by:Select.GroupBy=None):
+                if where is None:
+                    w=""
+                else:
+                    w=" WHERE "
+                    for wh in where:
+                        w+=wh
+                if group_by is None:
+                    gb=""
+                else:
+                    gb=f" {group_by}"
+                if dbname.endswith(".sqlite3") or dbname.endswith(".db"):
+                    pass
+                else:
+                    dbname=f'{dbname}.db'
+                connect=sqlite3.connect(dbname)
+                cursor=connect.cursor()
+                cursor.execute(f"SELECT {columns} FROM {table_name}{w}{gb}")
+                data=cursor.fetchall()
+                connect.close()
+                return data
+
+            def FETCHONE(self,dbname:str,table_name:str,columns:Column="*",where:Where=None,group_by:Select.GroupBy=None):
+                if where is None:
+                    w=""
+                else:
+                    w=" WHERE "
+                    for wh in where:
+                        w+=wh
+                if group_by is None:
+                    gb=""
+                else:
+                    gb=f" {group_by}"
+                if dbname.endswith(".sqlite3") or dbname.endswith(".db"):
+                    pass
+                else:
+                    dbname=f'{dbname}.db'
+                connect=sqlite3.connect(dbname)
+                cursor=connect.cursor()
+                cursor.execute(f"SELECT {columns} FROM {table_name}{w}{gb}")
+                data=cursor.fetchone()
+                connect.close()
+                return data
+
+            def FETCHMANY(self,dbname:str,table_name:str,columns:Column="*",size:int=1,where:Where=None,group_by:Select.GroupBy=None):
+                if where is None:
+                    w=""
+                else:
+                    w=" WHERE "
+                    for wh in where:
+                        w+=wh
+                if group_by is None:
+                    gb=""
+                else:
+                    gb=f" {group_by}"
+                if dbname.endswith(".sqlite3") or dbname.endswith(".db"):
+                    pass
+                else:
+                    dbname=f'{dbname}.db'
+                connect=sqlite3.connect(dbname)
+                cursor=connect.cursor()
+                cursor.execute(f"SELECT {columns} FROM {table_name}{w}{gb}")
+                data=cursor.fetchmany(size)
+                connect.close()
+                return data
+                
     class Where:
         def __init__(self):
             pass
