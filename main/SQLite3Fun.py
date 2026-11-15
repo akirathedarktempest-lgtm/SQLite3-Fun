@@ -22,6 +22,8 @@ class DataBase:
         return "NULL"
     def REAL(self):
         return "REAL"
+    def ANY(self):
+        return "ANY"
 
     def PRIMARY_KEY(self):
         return "PRIMARY KEY"
@@ -31,35 +33,14 @@ class DataBase:
         return "NOT NULL"
     def DEAULT(self,arg):
         return f"DEFAULT ({arg})"
-    def CHECK(self,first_arg,comparision:str,second_arg, is_first_column_name=False,is_second_column=False):
-        if is_first_column_name is True:
-            first_arg=first_arg
+    def CHECK(self,*arg:Where|tuple|list):
+        if type(arg) is list or type(arg) is tuple:
+            statement=""
+            for a in arg:
+                statement+=a
+            return f"CHECK({statement})"
         else:
-            if type(first_arg) is str:
-                first_arg=f'"{first_arg}'
-            else:
-                first_arg=first_arg
-        if is_second_column is True:
-            second_arg=second_arg
-        else:
-            if type(second_arg) is str:
-                second_arg=f'"{second_arg}'
-            else:
-                second_arg=second_arg
-        if comparision==">":
-            return f"CHECK ({first_arg}>{second_arg})"
-        elif comparision=="<":
-            return f"CHECK ({first_arg}<{second_arg})"
-        elif comparision==">=":
-            return f"CHECK ({first_arg}>={second_arg})"
-        elif comparision=="<=":
-            return f"CHECK ({first_arg}<={second_arg})"
-        elif comparision=="<>":
-            return f"CHECK ({first_arg}<>{second_arg})"
-        elif comparision=="=":
-            return f"CHECK ({first_arg}={second_arg})"
-        else:
-            raise "Wrong comparision :("
+            raise "Invalid type!"
 
     def CreateDB(self):
         if self.dbName.endswith(".db") or self.dbName.endswith(".sqlite3"):
@@ -96,7 +77,7 @@ class DataBase:
                         continue
                     else:
                         statement+=f"{u} "
-                    if u.upper()==self.BLOB() or u.upper()==self.INT() or u.upper()==self.REAL() or u.upper()==self.NULL() or u.upper()==self.TEXT():
+                    if u.upper()==self.BLOB() or u.upper()==self.INT() or u.upper()==self.REAL() or u.upper()==self.NULL() or u.upper()==self.TEXT() or u.upper()==self.ANY():
                         dt+=1
                     else:
                         constrain.append(u)
