@@ -13,24 +13,7 @@ class DataBase:
             connect.commit()
             connect.close()
         except Exception as e:
-            connect.rollback()
-            raise Exception(e)
-        except sqlite3.OperationalError as ex:
-            connect.rollback()
-            raise Error(ex)
-        except sqlite3.IntegrityError as ex:
-            connect.rollback()
-            raise Error(ex)
-        except sqlite3.InterfaceError as ex:
-            connect.rollback()
-            raise Error(ex)
-        except sqlite3.Error as ex:
-            connect.rollback()
-            raise Error(ex)
-        except sqlite3.ProgrammingError as ex:
-            connect.rollback()
-            raise Error(ex)
-        
+            raise Error(e)
 
     def INT(self):
         return "INTEGER"
@@ -79,18 +62,19 @@ class DataBase:
             raise Exception(e)
 
     def CreateDB(self):
-        try:
-            if self.dbName.endswith(".db") or self.dbName.endswith(".sqlite3"):
-                connect=sqlite3.connect(self.dbName)
-                connect.close()
-                return self.dbName
+        for s in self.dbName:
+            if s in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1023456789_ ":
+                pass
             else:
-                connect=sqlite3.connect(f"{self.dbName}.db")
-                connect.close()
-                return f"{self.dbName}.db"
-        except Exception as e:
-            connect.rollback()
-            raise Exception(e)
+                raise Error(f"Invalid database name '{s}'")
+        if self.dbName.endswith(".db") or self.dbName.endswith(".sqlite3"):
+            connect=sqlite3.connect(self.dbName)
+            connect.close()
+            return self.dbName
+        else:
+            connect=sqlite3.connect(f"{self.dbName}.db")
+            connect.close()
+            return f"{self.dbName}.db"
 
     def CreateTable(self,table_name:str,*argu,may_exist=False):
         try:
@@ -143,20 +127,7 @@ class DataBase:
                 cursor.execute(f"CREATE TABLE {table_name}({statement})")
             connect.close()
         except Exception as e:
-            connect.rollback()
-            raise Exception(e)
-        except sqlite3.OperationalError as ex:
-            connect.rollback()
-            raise Error(ex)
-        except sqlite3.ProgrammingError as ex:
-            connect.rollback()
-            raise Error(ex)
-        except sqlite3.InterfaceError as ex:
-            connect.rollback()
-            raise Error(ex)
-        except sqlite3.IntegrityError as ex:
-            connect.rollback()
-            raise Error(ex)
+            raise Error(e)
 
     class AlterTable:
 
