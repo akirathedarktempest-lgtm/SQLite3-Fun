@@ -5,12 +5,32 @@ class DataBase:
         self.dbName=dbName
 
     def DROP_TABLE(self,table_name:str):
-        db=self.CreateDB()
-        connect=sqlite3.connect(db)
-        cursor=connect.cursor()
-        cursor.execute(f"DROP TABLE {table_name}")
-        connect.commit()
-        connect.close()
+        try:
+            db=self.CreateDB()
+            connect=sqlite3.connect(db)
+            cursor=connect.cursor()
+            cursor.execute(f"DROP TABLE {table_name}")
+            connect.commit()
+            connect.close()
+        except Exception as e:
+            connect.rollback()
+            raise Exception(e)
+        except sqlite3.OperationalError as ex:
+            connect.rollback()
+            raise Error(ex)
+        except sqlite3.IntegrityError as ex:
+            connect.rollback()
+            raise Error(ex)
+        except sqlite3.InterfaceError as ex:
+            connect.rollback()
+            raise Error(ex)
+        except sqlite3.Error as ex:
+            connect.rollback()
+            raise Error(ex)
+        except sqlite3.ProgrammingError as ex:
+            connect.rollback()
+            raise Error(ex)
+        
 
     def INT(self):
         return "INTEGER"
@@ -32,73 +52,111 @@ class DataBase:
     def NOT_NULL(self):
         return "NOT NULL"
     def DEAULT(self,arg):
-        return f"DEFAULT ({arg})"
+        try:
+            if type(arg) is bytes:
+                h=arg.hex()
+                arg=f"X'{h}'"
+            elif type(arg) is str:
+                arg="'arg'"
+            elif type(arg) is list or type(arg) is set or type(arg) is tuple:
+                raise TypeError(f"Invalid type error: {type(arg)}")
+            else:
+                pass
+            return f"DEFAULT ({arg})"
+        except Exception as e:
+            raise Exception(e)
+        
     def CHECK(self,*arg:Where|tuple|list):
-        if type(arg) is list or type(arg) is tuple:
-            statement=""
-            for a in arg:
-                statement+=a
-            return f"CHECK({statement})"
-        else:
-            raise "Invalid type!"
+        try:
+            if type(arg) is list or type(arg) is tuple:
+                statement=""
+                for a in arg:
+                    statement+=a
+                return f"CHECK({statement})"
+            else:
+                raise "Invalid type!"
+        except Exception as e:
+            raise Exception(e)
 
     def CreateDB(self):
-        if self.dbName.endswith(".db") or self.dbName.endswith(".sqlite3"):
-            connect=sqlite3.connect(self.dbName)
-            connect.close()
-            return self.dbName
-        else:
-            connect=sqlite3.connect(f"{self.dbName}.db")
-            connect.close()
-            return f"{self.dbName}.db"
+        try:
+            if self.dbName.endswith(".db") or self.dbName.endswith(".sqlite3"):
+                connect=sqlite3.connect(self.dbName)
+                connect.close()
+                return self.dbName
+            else:
+                connect=sqlite3.connect(f"{self.dbName}.db")
+                connect.close()
+                return f"{self.dbName}.db"
+        except Exception as e:
+            connect.rollback()
+            raise Exception(e)
 
     def CreateTable(self,table_name:str,*argu,may_exist=False):
-        for w in table_name:
-            if w in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_":
-                pass
-            else:
-                raise
-        statement=""
-        for a in argu:
-            dt=0
-            constrain=[]
-            if type(a) is list or type(a) is tuple:
-                name=a[0]
-                for n in name:
-                    if n in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_":
-                        pass
-                    else:
-                        raise "Wrong name"
-                statement+=f"{name} "
-                for u in a:
-                    if u in constrain:
-                        continue
-                    if u==name:
-                        continue
-                    else:
-                        statement+=f"{u} "
-                    if u.upper()==self.BLOB() or u.upper()==self.INT() or u.upper()==self.REAL() or u.upper()==self.NULL() or u.upper()==self.TEXT() or u.upper()==self.ANY():
-                        dt+=1
-                    else:
-                        constrain.append(u)
-                if a==argu[-1]:
+        try:
+            db=self.CreateDB()
+            connect=sqlite3.connect(db)
+            for w in table_name:
+                if w in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_":
                     pass
                 else:
-                    statement+=","
+                    raise Error("Invalid table name error!")
+            statement=""
+            for a in argu:
+                dt=0
+                constrain=[]
+                if type(a) is list or type(a) is tuple:
+                    name=a[0]
+                    for n in name:
+                        if n in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_":
+                            pass
+                        else:
+                            raise Error("Invalid column name!")
+                    statement+=f"{name} "
+                    for u in a:
+                        if type(u) is not str:
+                            raise TypeError(f"Expecting a str but got {type(u)}")
+                        if u in constrain:
+                            continue
+                        if u==name:
+                            continue
+                        else:
+                            statement+=f"{u} "
+                        if u.upper()==self.BLOB() or u.upper()==self.INT() or u.upper()==self.REAL() or u.upper()==self.NULL() or u.upper()==self.TEXT() or u.upper()==self.ANY():
+                            dt+=1
+                        else:
+                            constrain.append(u)
+                    if a==argu[-1]:
+                        pass
+                    else:
+                        statement+=","
+                else:
+                    raise TypeError(f"Expected a list or tuple but got {type(a)}")
+                if dt>1:
+                    raise Error(f"A column can only have one have one type, got {dt} instead!")
+                else:
+                    pass
+            cursor=connect.cursor()
+            if may_exist is True:
+                cursor.execute(f"CREATE TABLE IF NOT EXISTS {table_name}({statement})")
             else:
-                raise
-        if dt>1:
-            raise
-        else:
-            pass
-        db=self.CreateDB()
-        connect=sqlite3.connect(db)
-        cursor=connect.cursor()
-        if may_exist is True:
-            cursor.execute(f"CREATE TABLE IF NOT EXISTS {table_name}({statement})")
-        else:
-            cursor.execute(f"CREATE TABLE {table_name}({statement})")
-        connect.close()
+                cursor.execute(f"CREATE TABLE {table_name}({statement})")
+            connect.close()
+        except Exception as e:
+            connect.rollback()
+            raise Exception(e)
+        except sqlite3.OperationalError as ex:
+            connect.rollback()
+            raise Error(ex)
+        except sqlite3.ProgrammingError as ex:
+            connect.rollback()
+            raise Error(ex)
+        except sqlite3.InterfaceError as ex:
+            connect.rollback()
+            raise Error(ex)
+        except sqlite3.IntegrityError as ex:
+            connect.rollback()
+            raise Error(ex)
 
     class AlterTable:
 
@@ -640,6 +698,9 @@ Select=DataBase.Select
 Aggregate=DataBase.Select.Aggregate
 Where=DataBase.Where
 Column=DataBase.Column
+
+class Error(Exception):
+    pass
 
 if "__main__"==__name__:
     pass
