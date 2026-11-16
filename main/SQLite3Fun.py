@@ -225,26 +225,29 @@ class DataBase:
             pass
 
         def __str(self,content:str):
-            return content.replace("/s/","'")
+            try:
+                return content.replace("/s/","'")
+            except Exception as e:
+                raise Error(e)
 
         def UPDATE(self,dbname:str,table_name:str,column:str,set:str,where:str=None):
-            if dbname.endswith(".db") or dbname.endswith(".sqlite3"):
-                dbname=dbname
-            else:
-                dbname=f"{dbname}.db"
-            if where is None:
-                where=""
-            elif type(where) is str:
-                where=self.__str(where)#i was keeping __str(set) not __set(where)...lol, but problem solved
-                where=f"WHERE {where}"
-            else:
-                raise
-            set=self.__str(set)
-            connect=sqlite3.connect(dbname)
-            cursor=connect.cursor()
-            cursor.execute(f"UPDATE {table_name} SET {column}={set} {where}")
-            connect.commit()
-            connect.close()
+            try:
+                dbname=DataBase(dbname).CreateDB()
+                if where is None:
+                    where=""
+                elif type(where) is str:
+                    where=self.__str(where)#i was keeping __str(set) not __set(where)...lol, but problem solved
+                    where=f" WHERE {where}"
+                else:
+                    raise Error("Invalid datatype of WHERE clause")
+                set=self.__str(set)
+                connect=sqlite3.connect(dbname)
+                cursor=connect.cursor()
+                cursor.execute(f"UPDATE {table_name} SET {column}={set}{where}")
+                connect.commit()
+                connect.close()
+            except Exception as e:
+                raise Error(e)
 
     class Insert:
         def __init__(self):
