@@ -63,6 +63,19 @@ class DataBase:
 
     def CreateDB(self):
         for s in self.dbName:
+            if s==".":
+                if s==self.dbName[-3]:
+                    if self.dbName.endswith(".db"):
+                        continue
+                    else:
+                        pass
+                elif s==self.dbName[-8]:
+                    if self.dbName.endswith(".sqlite3"):
+                        continue
+                    else:
+                        pass
+                else:
+                    pass
             if s in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1023456789_ ":
                 pass
             else:
@@ -132,70 +145,80 @@ class DataBase:
     class AlterTable:
 
         def RENAME_TABLE(self,dbname:str,table_old_name:str,table_new_name:str):
-            if dbname.endswith(".db") or dbname.endswith(".sqlite3"):
-                dbname=dbname
-            else:
-                dbname=f"{dbname}.db"
-            connect=sqlite3.connect(dbname)
-            cursor=connect.cursor()
-            cursor.execute(f"ALTER TABLE {table_old_name} RENAME TO {table_new_name}")
-            connect.commit()
-            connect.close()
+            try:
+                dbname=DataBase(dbname).CreateDB()
+                connect=sqlite3.connect(dbname)
+                cursor=connect.cursor()
+                cursor.execute(f"ALTER TABLE {table_old_name} RENAME TO {table_new_name}")
+                connect.commit()
+                connect.close()
+            except Exception as e:
+                raise Error(e)
 
         def RENAME_COLUMN(self,dbname:str,table_name:str,old_column_name:str,new_column_name:str):
-            if dbname.endswith(".db") or dbname.endswith(".sqlite3"):
-                dbname=dbname
-            else:
-                dbname=f"{dbname}.db"
-            connect=sqlite3.connect(dbname)
-            cursor=connect.cursor()
-            cursor.execute(f"ALTER TABLE {table_name} RENAME COLUMN {old_column_name} TO {new_column_name}")
-            connect.commit()
-            connect.close()
+            try:
+                dbname=DataBase(dbname).CreateDB()
+                connect=sqlite3.connect(dbname)
+                cursor=connect.cursor()
+                cursor.execute(f"ALTER TABLE {table_name} RENAME COLUMN {old_column_name} TO {new_column_name}")
+                connect.commit()
+                connect.close()
+            except Exception as e:
+                raise Error(e)
 
         def DROP_COLUMN(self,dbname:str,table_name:str,column_name:str):
-            if dbname.endswith(".db") or dbname.endswith(".sqlite3"):
-                dbname=dbname
-            else:
-                dbname=f"{dbname}.db"
-            connect=sqlite3.connect(dbname)
-            cursor=connect.cursor()
-            cursor.execute(f"ALTER TABLE {table_name} DROP COLUMN {column_name}")
-            connect.commit()
-            connect.close()
+            try:
+                dbname=DataBase(dbname).CreateDB()
+                connect=sqlite3.connect(dbname)
+                cursor=connect.cursor()
+                cursor.execute(f"ALTER TABLE {table_name} DROP COLUMN {column_name}")
+                connect.commit()
+                connect.close()
+            except Exception as e:
+                raise Error(e)
 
-        def ADD_COLUMN(self,dbname:str,table_name:str,column_name:str,*datatype,constrains:str=None):
-            if dbname.endswith(".db") or dbname.endswith(".sqlite3"):
-                dbname=dbname
-            else:
-                dbname=f"{dbname}.db"
-            con=""
-            if "PRIMARY KEY" in constrains.upper() or "UNIQUE" in constrains.upper():
-                raise "Invalid Constrain"
-            elif "NOT NULL" in constrains.upper():
-                if "DEFAULT" in constrains.upper():
-                    pass
-                else:
-                    raise
-            elif constrains:
-                con+=constrains
-            else:
+        def ADD_COLUMN(self,dbname:str,table_name:str,column_name:str,datatype:str,constrains:tuple=None):
+            try:
+                dbname=DataBase(dbname).CreateDB()
                 con=""
-            dt=0
-            dty=""
-            for d in datatype:
-                if d.upper()=="REAL" or d.upper=="TEXT" or d.upper()=="INT" or d.upper()=="INTEGER" or d.upper()=="NULL" or d.upper()=="BLOB":
-                    dt+=1
-                    dty+=d.upper()
+                dty=""
+                if constrains is None:
+                    con=""
                 else:
-                    raise
-            if dt>1:
-                raise "Only one datatype"
-            connect=sqlite3.connect(dbname)
-            cursor=connect.cursor()
-            cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {dty} {con}")
-            connect.commit()
-            connect.close()
+                    if type(constrains) is not list and type(constrains) is not tuple:
+                        raise TypeError(f"Expected list or tuple but got {type(constrains)}")
+                    else:
+                        for c in constrains:
+                            if c.upper()=="PRIMARY KEY" or c.upper()=="UNIQUE":
+                                raise Error("You can't add a column with PRIMARY KEY or UNIQUE")
+                            elif c.upper()=="NOT NULL":
+                                for co in constrains:
+                                    n=1
+                                    if "DEFAULT" in co.upper():
+                                        n=0
+                                        break
+                                    else:
+                                        pass
+                                if n==1:
+                                    raise Error("NOT NULL without DEFAULT is invalid")
+                                else:
+                                    con+="NOT NULL "
+                            else:
+                                con+=F"{c} "
+                if type(datatype) is str:
+                    if datatype.upper()=="TEXT" or datatype.upper()=="INT" or datatype.upper()=="INTEGER" or datatype.upper()=="BLOB" or datatype.upper()=="REAL" or datatype.upper()=="NULL" or datatype.upper()=="ANY":
+                        pass
+                    else:
+                        raise Error("Invalid datatype for sqlite3")
+                else:
+                    raise TypeError(f"Expected str but got {type(datatype)}")
+                connect=sqlite3.connect(dbname)
+                cursor=connect.cursor()
+                cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {datatype} {con}")
+                connect.commit()
+                connect.close()
+            except Exception as e:
+                raise Error(e)
 
     class Update:
         def __init__(self):
