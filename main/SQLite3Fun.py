@@ -254,83 +254,92 @@ class DataBase:
             pass
 
         def INSERT(self,dbname:str,table_name:str,insert:tuple|list,all_columns:bool=True,specific_column:tuple|list=None):
-            if dbname.endswith(".db") or dbname.endswith(".sqlite3"):
-                dbname=dbname
-            else:
-                dbname=f"{dbname}.db"
-            if specific_column is None:
-                if all_columns is False:
-                    raise
-                else:
-                    question=f""
-                    for ins in insert:
-                        if ins==insert[-1]:
-                            question+=f"?"
-                        else:
-                            question+=f"?,"
-                    statement=f"INSERT INTO {table_name} VALUES ({question})"
-            elif specific_column is not None:
-                if len(insert)==len(specific_column):
-                    if type(specific_column) is list or type(specific_column) is tuple:
-                        pass
+            try:
+                dbname=DataBase(dbname).CreateDB()
+                if specific_column is None:
+                    if all_columns is False:
+                        raise Error("Specific columns is None and all columns false is invalid!")
                     else:
-                        raise
-                    if all_columns is True:
-                        raise
-                    else:
-                        specific=""
-                        for sc in specific_column:
-                            if type(sc) is str:
-                                pass
-                            else:
-                                raise
-                            if sc==specific_column[-1]:
-                                specific+=f"{sc}"
-                            else:
-                                specific+=f"{sc},"
-                        question=""
+                        question=f""
                         for ins in insert:
                             if ins==insert[-1]:
-                                question+="?"
+                                question+=f"?"
                             else:
-                                question+="?,"
-                        statement=f"INSERT INTO {table_name}({specific}) VALUES ({question})"
+                                question+=f"?,"
+                        statement=f"INSERT INTO {table_name} VALUES ({question})"
+                elif specific_column is not None:
+                    if len(insert)==len(specific_column):
+                        if type(specific_column) is list or type(specific_column) is tuple:
+                            pass
+                        else:
+                            raise Error(f"Expected tuple or list but got {type(specific_column)}")
+                        if all_columns is True:
+                            raise Error("Inserted specific columns but all column True is invalid!")
+                        else:
+                            specific=""
+                            for sc in specific_column:
+                                if type(sc) is str:
+                                    pass
+                                else:
+                                    raise Error(f"Column name expected to be str but got {type(sc)}")
+                                if sc==specific_column[-1]:
+                                    specific+=f"{sc}"
+                                else:
+                                    specific+=f"{sc},"
+                            question=""
+                            for ins in insert:
+                                if ins==insert[-1]:
+                                    question+="?"
+                                else:
+                                    question+="?,"
+                            statement=f"INSERT INTO {table_name}({specific}) VALUES ({question})"
+                    else:
+                        raise Error("Number of inserted values is not equal to the number of the columns")
                 else:
-                    raise
-            else:
-                raise "Unknown error"
-            connect=sqlite3.connect(dbname)
-            cursor=connect.cursor()
-            cursor.execute(f"{statement}",insert)
-            connect.commit()
-            connect.close()
+                    raise Error("Unknown error")
+                connect=sqlite3.connect(dbname)
+                cursor=connect.cursor()
+                cursor.execute(f"{statement}",insert)
+                connect.commit()
+                connect.close()
+            except Exception as e:
+                raise Error(e)
 
     class Delete:
         def __init__(self):
             pass
 
         def __str(self,content:str):
-            return content.replace("/s/","'")
+            try:
+                return content.replace("/s/","'")
+            except Exception as e:
+                raise Error(e)
 
-        def DELETE(self,dbname:str,table_name:str,where=None):
-            if dbname.endswith(".db") or dbname.endswith(".sqlite3"):
-                dbname=dbname
-            else:
-                dbname=f"{dbname}.db"
-            if where is None:
-                statement=f"DELETE FROM {table_name}"
-            else:
-                if type(where) is str:
-                    pass
+        def DELETE(self,dbname:str,table_name:str,where:tuple|list=None):
+            try:
+                dbname=DataBase(dbname).CreateDB()
+                if where is None:
+                    statement=f"DELETE FROM {table_name}"
                 else:
-                    raise
-                where=self.__str(where)
-                statement=f"DELETE FROM {table_name} WHERE {where}"
-            connect=sqlite3.connect(dbname)
-            cursor=connect.cursor()
-            cursor.execute(statement)
-            connect.commit()
-            connect.close()
+                    if type(where) is list or type(where) is tuple:
+                        pass
+                    else:
+                        raise
+                    wh=""
+                    for w in where:
+                        if type(w) is str:
+                            wh+=w
+                        else:
+                            raise Error(f"Expected str but got {type(w)}")
+                    where=self.__str(wh)
+                    statement=f"DELETE FROM {table_name} WHERE {where}"
+                connect=sqlite3.connect(dbname)
+                cursor=connect.cursor()
+                cursor.execute(statement)
+                connect.commit()
+                connect.close()
+            except Exception as e:
+                raise Error(e)
 
     class Select:
         def __init__(self):
@@ -695,6 +704,7 @@ Select=DataBase.Select
 Aggregate=DataBase.Select.Aggregate
 Where=DataBase.Where
 Column=DataBase.Column
+Delete=DataBase.Delete
 
 class Error(Exception):
     pass
