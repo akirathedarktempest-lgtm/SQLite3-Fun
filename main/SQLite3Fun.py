@@ -573,82 +573,82 @@ class DataBase:
                 pass
 
             def FETCHALL(self,dbname:str,table_name:str,columns:Column="*",where:Where=None,group_by:Select.GroupBy=None,order_by=None):
-                if where is None:
-                    w=""
-                else:
-                    w=" WHERE "
-                    for wh in where:
-                        w+=wh
-                if group_by is None:
-                    gb=""
-                else:
-                    gb=f" {group_by}"
-                if order_by is None:
-                    ob=""
-                else:
-                    ob=f" {order_by}"
-                if dbname.endswith(".sqlite3") or dbname.endswith(".db"):
-                    pass
-                else:
-                    dbname=f'{dbname}.db'
-                connect=sqlite3.connect(dbname)
-                cursor=connect.cursor()
-                cursor.execute(f"SELECT {columns} FROM {table_name}{w}{gb}{ob}")
-                data=cursor.fetchall()
-                connect.close()
-                return data
+                try:
+                    if where is None:
+                        w=""
+                    else:
+                        w=" WHERE "
+                        for wh in where:
+                            w+=wh
+                    if group_by is None:
+                        gb=""
+                    else:
+                        gb=f" {group_by}"
+                    if order_by is None:
+                        ob=""
+                    else:
+                        ob=f" {order_by}"
+                    dbname=DataBase(dbname).CreateDB()
+                    connect=sqlite3.connect(dbname)
+                    cursor=connect.cursor()
+                    cursor.execute(f"SELECT {columns} FROM {table_name}{w}{gb}{ob}")
+                    data=cursor.fetchall()
+                    connect.close()
+                    return data
+                except Exception as e:
+                    raise Error(e)
 
             def FETCHONE(self,dbname:str,table_name:str,columns:Column="*",where:Where=None,group_by:Select.GroupBy=None,order_by=None):
-                if where is None:
-                    w=""
-                else:
-                    w=" WHERE "
-                    for wh in where:
-                        w+=wh
-                if group_by is None:
-                    gb=""
-                else:
-                    gb=f" {group_by}"
-                if order_by is None:
-                    ob=""
-                else:
-                    ob=f" {order_by}"
-                if dbname.endswith(".sqlite3") or dbname.endswith(".db"):
-                    pass
-                else:
-                    dbname=f'{dbname}.db'
-                connect=sqlite3.connect(dbname)
-                cursor=connect.cursor()
-                cursor.execute(f"SELECT {columns} FROM {table_name}{w}{gb}{ob}")
-                data=cursor.fetchone()
-                connect.close()
-                return data
+                try:
+                    if where is None:
+                        w=""
+                    else:
+                        w=" WHERE "
+                        for wh in where:
+                            w+=wh
+                    if group_by is None:
+                        gb=""
+                    else:
+                        gb=f" {group_by}"
+                    if order_by is None:
+                        ob=""
+                    else:
+                        ob=f" {order_by}"
+                    dbname=DataBase(dbname).CreateDB()
+                    connect=sqlite3.connect(dbname)
+                    cursor=connect.cursor()
+                    cursor.execute(f"SELECT {columns} FROM {table_name}{w}{gb}{ob}")
+                    data=cursor.fetchone()
+                    connect.close()
+                    return data
+                except Exception as e:
+                    raise Error(e)
 
             def FETCHMANY(self,dbname:str,table_name:str,columns:Column="*",size:int=1,where:Where=None,group_by:Select.GroupBy=None,order_by=None):
-                if where is None:
-                    w=""
-                else:
-                    w=" WHERE "
-                    for wh in where:
-                        w+=wh
-                if group_by is None:
-                    gb=""
-                else:
-                    gb=f" {group_by}"
-                if order_by is None:
-                    ob=""
-                else:
-                    ob=f" {order_by}"
-                if dbname.endswith(".sqlite3") or dbname.endswith(".db"):
-                    pass
-                else:
-                    dbname=f'{dbname}.db'
-                connect=sqlite3.connect(dbname)
-                cursor=connect.cursor()
-                cursor.execute(f"SELECT {columns} FROM {table_name}{w}{gb}{ob}")
-                data=cursor.fetchmany(size)
-                connect.close()
-                return data
+                try:
+                    if where is None:
+                        w=""
+                    else:
+                        w=" WHERE "
+                        for wh in where:
+                            w+=wh
+                    if group_by is None:
+                        gb=""
+                    else:
+                        gb=f" {group_by}"
+                    if order_by is None:
+                        ob=""
+                    else:
+                        ob=f" {order_by}"
+                    dbname=DataBase(dbname).CreateDB()
+                    connect=sqlite3.connect(dbname)
+                    cursor=connect.cursor()
+                    cursor.execute(f"SELECT {columns} FROM {table_name}{w}{gb}{ob}")
+                    data=cursor.fetchmany(size)
+                    connect.close()
+                    return data
+                except Exception as e:
+                    raise Error(e)
                 
     class Where:
         def __init__(self):
