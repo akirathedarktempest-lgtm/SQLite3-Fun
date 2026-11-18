@@ -350,39 +350,48 @@ class DataBase:
                 pass
 
             def ORDER_BY(self,column:str,by:str="ASC"):
-                if by.upper()=="ASC" or by.upper()=="DESC":
-                    return f"ORDER BY {column} {by.upper()}"
-                else:
-                    raise "Invalid by!"
+                try:
+                    if by.upper()=="ASC" or by.upper()=="DESC":
+                        return f"ORDER BY {column} {by.upper()}"
+                    else:
+                        raise Error("Invalid by!")
+                except Exception as e:
+                    raise Error(e)
 
         class GroupBy:
             def __init__(self):
                 pass
 
             def GROUP_BY(self,column:str,having:bool=False,aggregate_comparision=None):
-                if aggregate_comparision is not None and having is False:
-                    raise "Having false and using aggregate is invalid"
-                else:
-                    if having is False and aggregate_comparision is None:
-                        h=""
+                try:
+                    if aggregate_comparision is not None and having is False:
+                        raise Error("Having false and using aggregate is invalid")
                     else:
-                        h=f" HAVING {aggregate_comparision}"
-                    return f"GROUP BY {column}{h}"
+                        if having is False and aggregate_comparision is None:
+                            h=""
+                        else:
+                            h=f" HAVING {aggregate_comparision}"
+                        return f"GROUP BY {column}{h}"
+                except Exception as e:
+                    raise Error(e)
 
             def HAVING(self,aggregate:str,value,comparision:str="="):
-                if comparision=="=" or comparision=="<>" or comparision==">" or comparision=="<" or comparision=="<=" or comparision==">=":
-                    if type(value) is list or type(value) is list or type(value) is list:
-                        raise "Invalid type!"
-                    elif type(value) is bytes:
-                        v=value.hex()
-                        value=f"X'{v}'"
-                    elif type(value) is str:
-                        value=f"'{value}'"
+                try:
+                    if comparision=="=" or comparision=="<>" or comparision==">" or comparision=="<" or comparision=="<=" or comparision==">=":
+                        if type(value) is list or type(value) is tuple or type(value) is set or type(value) is dict:
+                            raise Error("Invalid type!")
+                        elif type(value) is bytes:
+                            v=value.hex()
+                            value=f"X'{v}'"
+                        elif type(value) is str:
+                            value=f"'{value}'"
+                        else:
+                            value=value
+                        return f"{aggregate} {comparision} {value}"
                     else:
-                        value=value
-                    return f"{aggregate} {comparision} {value}"
-                else:
-                    raise "Invalid comparision sign!"
+                        raise "Invalid comparision sign!"
+                except Exception as e:
+                    raise Error(e)
 
         class Aggregate:
 
@@ -390,153 +399,174 @@ class DataBase:
                 pass
 
             def COUNT(self,column:str="*",distinct:bool=False,filter:tuple|list=None):
-                if filter is None:
-                    f=""
-                else:
-                    f=" FILTER (WHERE "
-                    if type(filter) is list or type(filter) is tuple:
-                        pass
-                    else:
-                        raise
-                    for fi in filter:
-                        f+=f"{fi}"
-                    f+=")"
-                if column.upper()=="*":
-                    return f"COUNT(*){f}"
-                else:
-                    if distinct is True:
-                        return f"COUNT(DISTINCT {column}){f}"
-                    else:
-                        return f"COUNT({column}){f}"
-
-            def AVG(self,column:str,distinct:bool=False,filter:tuple|list=None):
-                if type(column) is str:
+                try:
                     if filter is None:
                         f=""
                     else:
-                        if type(filter) is tuple or type(filter) is list:
-                            f=" FILTER (WHERE "
-                            for fi in filter:
-                                f+=f"{fi}"
-                            f+=")"
-                        else:
-                            raise
-                    if distinct is True:
-                        return f'AVG(DISTINCT {column}){f}'
-                    else:
-                        return f"AVG({column}){f}"
-                else:
-                    raise
-
-            def MAX(self,column:str,distinct:bool=False,filter:tuple|list=None):
-                if filter is None:
-                    f=""
-                else:
-                    if type(filter) is list or type(filter) is tuple:
                         f=" FILTER (WHERE "
+                        if type(filter) is list or type(filter) is tuple:
+                            pass
+                        else:
+                            raise Error(f"Expected list or tuple but got {type(filter)}")
                         for fi in filter:
                             f+=f"{fi}"
                         f+=")"
+                    if column.upper()=="*":
+                        return f"COUNT(*){f}"
                     else:
-                        raise
-                if type(column) is str:
-                    if distinct is True:
-                        return f"MAX(DISTINCT {column}){f}"
+                        if distinct is True:
+                            return f"COUNT(DISTINCT {column}){f}"
+                        else:
+                            return f"COUNT({column}){f}"
+                except Exception as e:
+                    raise Error(e)
+
+            def AVG(self,column:str,distinct:bool=False,filter:tuple|list=None):
+                try:
+                    if type(column) is str:
+                        if filter is None:
+                            f=""
+                        else:
+                            if type(filter) is tuple or type(filter) is list:
+                                f=" FILTER (WHERE "
+                                for fi in filter:
+                                    f+=f"{fi}"
+                                f+=")"
+                            else:
+                                raise Error(f"Expected list or tuple but got {type(filter)}")
+                        if distinct is True:
+                            return f'AVG(DISTINCT {column}){f}'
+                        else:
+                            return f"AVG({column}){f}"
                     else:
-                        return f"MAX({column}){f}"
-                else:
-                    raise
+                        raise Error(f"Expected column name to be str but got {type(column)}")
+                except Exception as e:
+                    raise Error(e)
+
+            def MAX(self,column:str,distinct:bool=False,filter:tuple|list=None):
+                try:
+                    if filter is None:
+                        f=""
+                    else:
+                        if type(filter) is list or type(filter) is tuple:
+                            f=" FILTER (WHERE "
+                            for fi in filter:
+                                f+=f"{fi}"
+                            f+=")"
+                        else:
+                            raise Error(f"Expected list or tuple but got {type(filter)}")
+                    if type(column) is str:
+                        if distinct is True:
+                            return f"MAX(DISTINCT {column}){f}"
+                        else:
+                            return f"MAX({column}){f}"
+                    else:
+                        raise Error(f"Expected column to be str but got {type(column)}")
+                except Exception as e:
+                    raise Error(e)
 
             def MIN(self,column:str,distinct:bool=False,filter:tuple|list=None):
-                if type(column) is str:
-                    if filter is None:
-                        f=""
-                    else:
-                        if type(filter) is list or type(filter) is tuple:
-                            f=" FILTER (WHERE "
-                            for fi in filter:
-                                f+=f"{fi}"
-                            f+=")"
+                try:
+                    if type(column) is str:
+                        if filter is None:
+                            f=""
                         else:
-                            raise
-                    if distinct is True:
-                        return f"MIN(DISTINCT {column}){f}"
-                    else: 
-                        return f"MIN({column}){f}"
-                else:
-                    raise
+                            if type(filter) is list or type(filter) is tuple:
+                                f=" FILTER (WHERE "
+                                for fi in filter:
+                                    f+=f"{fi}"
+                                f+=")"
+                            else:
+                                raise Error(f"Expected filter to be list or tuple but got {type(filter)}")
+                        if distinct is True:
+                            return f"MIN(DISTINCT {column}){f}"
+                        else: 
+                            return f"MIN({column}){f}"
+                    else:
+                        raise Error(f"Expected column to be str but got {type(column)}")
+                except Exception as e:
+                    raise Error(e)
 
             def TOTAL(self,column:str,distinct:bool=False,filter:tuple|list=None):
-                if type(column) is str:
-                    if filter is None:
-                        f=""
-                    else:
-                        if type(filter) is list or type(filter) is tuple:
-                            f=" FILTER (WHERE "
-                            for fi in filter:
-                                f+=f"{fi}"
-                            f+=")"
+                try:
+                    if type(column) is str:
+                        if filter is None:
+                            f=""
                         else:
-                            raise
-                    if distinct is True:
-                        return f"TOTAL(DISTINCT {column}){f}"
+                            if type(filter) is list or type(filter) is tuple:
+                                f=" FILTER (WHERE "
+                                for fi in filter:
+                                    f+=f"{fi}"
+                                f+=")"
+                            else:
+                                raise Error(f"Expected filter to be list or tuple but got {type(filter)}")
+                        if distinct is True:
+                            return f"TOTAL(DISTINCT {column}){f}"
+                        else:
+                            return f"TOTAL({column}){f}"
                     else:
-                        return f"TOTAL({column}){f}"
-                else:
-                    raise
+                        raise Error(f"Expected column to be str but got {type(column)}")
+                except Exception as e:
+                    raise Error(e)
 
             def SUM(self,column:str,distinct:bool=False,filter:tuple|list=None):
-                if type(column) is str:
-                    if filter is None:
-                        f=""
-                    else:
-                        if type(filter) is list or type(filter) is tuple:
-                            f=" FILTER (WHERE "
-                            for fi in filter:
-                                f+=f"{fi}"
-                            f+=")"
+                try:
+                    if type(column) is str:
+                        if filter is None:
+                            f=""
                         else:
-                            raise
-                    if distinct is True:
-                        return f"SUM(DISTINCT {column}){f}"
+                            if type(filter) is list or type(filter) is tuple:
+                                f=" FILTER (WHERE "
+                                for fi in filter:
+                                    f+=f"{fi}"
+                                f+=")"
+                            else:
+                                raise Error(f"Expected filter to be list or tuple but got {type(filter)}")
+                        if distinct is True:
+                            return f"SUM(DISTINCT {column}){f}"
+                        else:
+                            return f"SUM({column}){f}"
                     else:
-                        return f"SUM({column}){f}"
-                else:
-                    raise
+                        raise Error(f"Expected column to be str but got {type(column)}")
+                except Exception as e:
+                    raise Error(e)
 
             def GROUP_CONCAT(self,column:str,separator:str=",",distinct:bool=False,filter:tuple|list=None,order_by:Select.OrderBy=None):
-                if type(column) is str:
-                    d=""
-                    if filter is None:
-                        f=""
-                    else:
-                        if type(filter) is list or type(filter) is tuple:
-                            f=" FILTER (WHERE "
-                            for fi in filter:
-                                f+=f"{fi}"
-                            f+=")"
-                        else:
-                            raise
-                    if order_by is None:
-                        order=""
-                    else:
-                        order=f" {order_by}"
-                    if distinct is True:
-                        d+="DISTINCT "
-                    else:
+                try:
+                    if type(column) is str:
                         d=""
-                    if separator==",":
-                        return f"GROUP_CONCAT({d}{column}{order}){f}"
-                    else:
-                        if type(separator) is str:
-                            if d=="":
-                                return f"GROUP_CONCAT({d}{column},{separator}{order}){f}"
-                            else:
-                                raise "You can't use separator with distinct"
+                        if filter is None:
+                            f=""
                         else:
-                            raise
-                else:
-                    raise
+                            if type(filter) is list or type(filter) is tuple:
+                                f=" FILTER (WHERE "
+                                for fi in filter:
+                                    f+=f"{fi}"
+                                f+=")"
+                            else:
+                                raise Error(f"Expected filter to be list or tuple but got {type(filter)}")
+                        if order_by is None:
+                            order=""
+                        else:
+                            order=f" {order_by}"
+                        if distinct is True:
+                            d+="DISTINCT "
+                        else:
+                            d=""
+                        if separator==",":
+                            return f"GROUP_CONCAT({d}{column}{order}){f}"
+                        else:
+                            if type(separator) is str:
+                                if d=="":
+                                    return f"GROUP_CONCAT({d}{column},{separator}{order}){f}"
+                                else:
+                                    raise Error("You can't use separator with distinct")
+                            else:
+                                raise Error(f"Expected separator to be str but got {type(separator)}")
+                    else:
+                        raise Error(f"Expected column to be str but got {type(column)}")
+                except Exception as e:
+                    raise Error(e)
 
         class Fetch:
             def __init__(self):
@@ -625,19 +655,22 @@ class DataBase:
             pass
 
         def COMPARISION(self,column_name:str,value,comparision:str='='):
-            if type(value) is str:
-                value=f'"{value}"'
-            elif type(value) is bytes:
-                h=value.hex()
-                value=f"X'{h}'"
-            elif type(value) is list or type(value) is dict or type(value) is set:
-                raise "Invalid type!"
-            else:
-                pass
-            if comparision ==">=" or comparision =="<=" or comparision =="=" or comparision =="<>" or comparision==">" or comparision =="<":
-                return f"{column_name} {comparision} {value}"
-            else:
-                raise "Invalid comparision"
+            try:
+                if type(value) is str:
+                    value=f'"{value}"'
+                elif type(value) is bytes:
+                    h=value.hex()
+                    value=f"X'{h}'"
+                elif type(value) is list or type(value) is dict or type(value) is set or type(value) is tuple:
+                    raise Error("Invalid type!")
+                else:
+                    pass
+                if comparision ==">=" or comparision =="<=" or comparision =="=" or comparision =="<>" or comparision==">" or comparision =="<":
+                    return f"{column_name} {comparision} {value}"
+                else:
+                    raise Error(f"Invalid comparision sign {comparision}")
+            except Exception as e:
+                raise Error(e)
 
         def AND(self):
             return " AND "
@@ -647,39 +680,49 @@ class DataBase:
             return " NOT "
 
         def IN(self,column:str,values:tuple|list):
-            statement=""
-            for v in values:
-                if type(v) is str:
-                    statement+=f"'{v}'"
-                elif type(v) is bytes:
-                    b=v.hex()
-                    statement+=f"X'{b}'"
-                elif type(v) is list or type(v) is dict or type(v) is set:
-                    raise "Invalid type!"
-                else:
-                    statement+=f"{v}"
-                if v==values[-1]:
+            try:
+                if type(values) is list or type(values) is tuple:
                     pass
                 else:
-                    statement+=","
-            return f"{column} IN ({statement})"
+                    raise Error(f"Expectd list or tuple but got {type(values)}")
+                statement=""
+                for v in values:
+                    if type(v) is str:
+                        statement+=f"'{v}'"
+                    elif type(v) is bytes:
+                        b=v.hex()
+                        statement+=f"X'{b}'"
+                    elif type(v) is list or type(v) is dict or type(v) is set:
+                        raise Error("Invalid type!")
+                    else:
+                        statement+=f"{v}"
+                    if v==values[-1]:
+                        pass
+                    else:
+                        statement+=","
+                return f"{column} IN ({statement})"
+            except Exception as e:
+                raise Error(e)
 
         def LIKE(self,column:str,islike,escape:str=None):
-            like=""
-            if type(islike) is list or type(islike) is dict or type(islike) is set:
-                raise "Invalid type!"
-            elif type(islike) is str:
-                like+=f"'{islike}'"
-            elif type(islike) is bytes:
-                h=islike.hex()
-                like+=f"X'{h}'"
-            else:
-                like+=f"{islike}"
-            if escape is None:
-                statement=f"{column} LIKE {like}"
-            else:
-                statement=f"{column} LIKE {like} ESCAPE '{escape}'"
-            return statement
+            try:
+                like=""
+                if type(islike) is list or type(islike) is dict or type(islike) is set:
+                    raise Error("Invalid type!")
+                elif type(islike) is str:
+                    like+=f"'{islike}'"
+                elif type(islike) is bytes:
+                    h=islike.hex()
+                    like+=f"X'{h}'"
+                else:
+                    like+=f"{islike}"
+                if escape is None:
+                    statement=f"{column} LIKE {like}"
+                else:
+                    statement=f"{column} LIKE {like} ESCAPE '{escape}'"
+                return statement
+            except Exception as e:
+                raise Error(e)
 
         def IS_NULL(self,column:str):
             return f"{column} IS NULL"
@@ -688,14 +731,17 @@ class DataBase:
 
     class Column:
         def COLUMN(self,*columns:str):
-            col=""
-            for c in columns:
-                col+=c
-                if c==columns[-1]:
-                    pass
-                else:
-                    col+=","
-            return col
+            try:
+                col=""
+                for c in columns:
+                    col+=c
+                    if c==columns[-1]:
+                        pass
+                    else:
+                        col+=","
+                return col
+            except Exception as e:
+                raise Error(e)
 
 AlterTable=DataBase.AlterTable
 Update=DataBase.Update
